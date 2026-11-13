@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Magic Forest & Lake Animals</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; height: 100%; overflow: hidden; position: fixed; inset: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .scene { width: 100%; height: 100%; position: relative; background: linear-gradient(180deg, #8ECAE6 0%, #A9D6E5 40%, #52B788 40%, #2D6A4F 100%); overflow: hidden; }
+    .lake { position: absolute; bottom: 5%; left: 10%; width: 80%; height: 35%; background: radial-gradient(ellipse at center, #48CAE4 0%, #0077B6 100%); border-radius: 50% / 40%; box-shadow: inset 0 10px 20px rgba(0,0,0,0.2); border: 4px solid rgba(255,255,255,0.4); }
+    .topbar { position: absolute; top: calc(env(safe-area-inset-top, 10px) + 6px); left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.9); border: 4px solid #FFB703; border-radius: 30px; padding: 6px 20px; font-size: clamp(16px, 3.5vw, 22px); font-weight: 900; color: #023047; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10; }
+    .animal-node { position: absolute; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; }
+    .animal-node:active { transform: scale(1.25); }
+    .animal-emoji { font-size: clamp(38px, 7vw, 64px); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); }
+    .animal-label { background: rgba(255, 255, 255, 0.85); color: #023047; font-size: clamp(10px, 2vw, 13px); font-weight: 900; padding: 1px 6px; border-radius: 10px; margin-top: -2px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .overlay { position: fixed; inset: 0; background: rgba(2, 48, 71, 0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; padding: 20px; }
+    .overlay.active { opacity: 1; pointer-events: auto; }
+    .showcase { width: min(85vw, 380px); background: #FFFFFF; border-radius: 40px; border: 8px solid #FFB703; box-shadow: 0 20px 50px rgba(0,0,0,0.35); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 20px; transform: scale(0.5); transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .overlay.active .showcase { transform: scale(1); }
+    .showcase-emoji { font-size: clamp(110px, 26vw, 160px); line-height: 1; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15)); animation: bounce 0.6s ease infinite alternate; }
+    @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+    .showcase-name { margin-top: 20px; color: #023047; font-size: clamp(34px, 8vw, 50px); font-weight: 900; letter-spacing: 1px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="scene" id="scene">
+    <div class="topbar">🌳 Magic Forest & Lake 🌊</div>
+    <div class="lake"></div>
+  </div>
+  <div class="overlay" id="overlay">
+    <div class="showcase" id="showcaseCard">
+      <div class="showcase-emoji" id="showcaseEmoji">🦁</div>
+      <div class="showcase-name" id="showcaseName">LION</div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('gesturestart', (e) => e.preventDefault());
+    const animals = [
+      { name: 'BIRD', emoji: '🐦', top: '8%', left: '15%' },
+      { name: 'OWL', emoji: '🦉', top: '10%', left: '45%' },
+      { name: 'MONKEY', emoji: '🐵', top: '18%', left: '75%' },
+      { name: 'SQUIRREL', emoji: '🐿️', top: '25%', left: '20%' },
+      { name: 'KOALA', emoji: '🐨', top: '22%', left: '85%' },
+      { name: 'LION', emoji: '🦁', top: '48%', left: '5%' },
+      { name: 'TIGER', emoji: '🐅', top: '52%', left: '82%' },
+      { name: 'BEAR', emoji: '🐻', top: '60%', left: '12%' },
+      { name: 'WOLF', emoji: '🐺', top: '65%', left: '78%' },
+      { name: 'FOX', emoji: '🦊', top: '45%', left: '35%' },
+      { name: 'DEER', emoji: '🦌', top: '50%', left: '60%' },
+      { name: 'RABBIT', emoji: '🐰', top: '68%', left: '30%' },
+      { name: 'PIG', emoji: '🐷', top: '72%', left: '18%' },
+      { name: 'ELEPHANT', emoji: '🐘', top: '75%', left: '85%' },
+      { name: 'GIRAFFE', emoji: '🦒', top: '38%', left: '90%' },
+      { name: 'HEDGEHOG', emoji: '🦔', top: '80%', left: '45%' },
+      { name: 'DUCK', emoji: '🦆', top: '62%', left: '42%' },
+      { name: 'FROG', emoji: '🐸', top: '70%', left: '55%' },
+      { name: 'FISH', emoji: '🐟', top: '66%', left: '48%' },
+      { name: 'CROCODILE', emoji: '🐊', top: '78%', left: '68%' },
+      { name: 'HIPPO', emoji: '🦛', top: '75%', left: '35%' },
+      { name: 'TURTLE', emoji: '🐢', top: '82%', left: '58%' }
+    ];
+    const scene = document.getElementById('scene');
+    const overlay = document.getElementById('overlay');
+    const showcaseEmoji = document.getElementById('showcaseEmoji');
+    const showcaseName = document.getElementById('showcaseName');
+
+    animals.forEach(animal => {
+      const node = document.createElement('div');
+      node.className = 'animal-node';
+      node.style.top = animal.top;
+      node.style.left = animal.left;
+      node.innerHTML = `<div class="animal-emoji">${animal.emoji}</div><div class="animal-label">${animal.name}</div>`;
+      node.onclick = () => {
+        showcaseEmoji.textContent = animal.emoji;
+        showcaseName.textContent = animal.name;
+        overlay.classList.add('active');
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(animal.name.toLowerCase());
+          utter.lang = 'en-US';
+          utter.rate = 0.88;
+          utter.pitch = 1.15;
+          window.speechSynthesis.speak(utter);
+        }
+      };
+      scene.appendChild(node);
+    });
+    overlay.onclick = (e) => {
+      if (e.target === overlay) {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        overlay.classList.remove('active');
+      }
+    };
+  </script>
+</body>
+</html>
